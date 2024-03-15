@@ -31841,7 +31841,7 @@ async function run() {
         }
         const prs = await getPullRequestWithNumbers(pullRequestNumbers, githubToken);
         const prsByCategory = groupPullRequestByCategories(prs);
-        const changelog = buildMarkdownChangelog(prsByCategory, toTag);
+        const changelog = buildMarkdownChangelog(prsByCategory, fromTag, toTag);
         core.setOutput('changelog', changelog);
     }
     catch (error) {
@@ -31894,7 +31894,7 @@ function groupPullRequestByCategories(prs) {
         }
     });
 }
-function buildMarkdownChangelog(prsByCategory, toTag) {
+function buildMarkdownChangelog(prsByCategory, fromTag, toTag) {
     const document = markdown_doc_builder_1.default.newBuilder().headerOrdered(false);
     document.h1('Changelog');
     document.h2(toTag);
@@ -31906,6 +31906,7 @@ function buildMarkdownChangelog(prsByCategory, toTag) {
             return `${pr.title} #${pr.number} (@${pr.user.login})`;
         }));
     });
+    document.link(`https://github.com/teamaltevo/action-changelog-generator/compare/${fromTag}...${toTag}`, 'Open full changelog in GitHub.');
     return document.toMarkdown();
 }
 

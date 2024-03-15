@@ -1,5 +1,8 @@
 name: 'Pull Request Changelog'
-description: 'This action is designed to generate a changelog based on the merged pull requests between two git tags. It is particularly useful when you want to generate a changelog for a new release.'
+description:
+  'This action is designed to generate a changelog based on the merged pull
+  requests between two git tags. It is particularly useful when you want to
+  generate a changelog for a new release.'
 author: 'Altevo'
 
 # Add your action's branding here. This will appear on the GitHub Marketplace.
