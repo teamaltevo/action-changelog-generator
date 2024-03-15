@@ -54,7 +54,7 @@ export async function run(): Promise<void> {
     const prs = await getPullRequestWithNumbers(pullRequestNumbers, githubToken)
     const prsByCategory = groupPullRequestByCategories(prs)
 
-    const changelog = buildMarkdownChangelog(prsByCategory, toTag)
+    const changelog = buildMarkdownChangelog(prsByCategory, fromTag, toTag)
     core.setOutput('changelog', changelog)
   } catch (error) {
     // Fail the workflow run if an error occurs
@@ -127,6 +127,7 @@ function groupPullRequestByCategories(prs: any): { title: string; prs: any }[] {
 
 function buildMarkdownChangelog(
   prsByCategory: { title: string; prs: any }[],
+  fromTag: string,
   toTag: string
 ) {
   const document = markdown.newBuilder().headerOrdered(false)
@@ -144,6 +145,11 @@ function buildMarkdownChangelog(
         })
       )
     })
+
+  document.link(
+    `https://github.com/teamaltevo/action-changelog-generator/compare/${fromTag}...${toTag}`,
+    'Open full changelog in GitHub.'
+  )
 
   return document.toMarkdown()
 }
