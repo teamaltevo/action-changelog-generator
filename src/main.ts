@@ -66,12 +66,9 @@ async function getPullRequestNumbersFromCommits(
   fromTag: string,
   toTag: string
 ) {
-  const commitLogs = await runCommand('git', [
-    'log',
-    `${fromTag}..${toTag}`,
-    '--oneline',
-    '--grep="Merge pull request #"'
-  ])
+  const commitLogs = await runCommand(
+    `/bin/bash -c "git --no-pager log ${fromTag}..${toTag} --oneline | grep 'Merge pull request #'"`
+  )
 
   const regex = /#\d+/g
   const pullRequestNumbers =
@@ -88,7 +85,7 @@ async function getPullRequestWithNumbers(numbers: number[], token: string) {
 
   return await Promise.all(
     numbers.map(async prNumber => {
-      core.info(`Getting info on PR #${prNumber}`)
+      core.debug(`Getting info on PR #${prNumber}`)
       const pr = await octokit.rest.pulls.get({
         owner: github.context.repo.owner,
         repo: github.context.repo.repo,
@@ -147,7 +144,7 @@ function buildMarkdownChangelog(
     })
 
   document.link(
-    `https://github.com/teamaltevo/action-changelog-generator/compare/${fromTag}...${toTag}`,
+    `https://github.com/${github.context.repo.owner}/${github.context.repo.repo}/compare/${fromTag}...${toTag}`,
     'Open full changelog in GitHub.'
   )
 

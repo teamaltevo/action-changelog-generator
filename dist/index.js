@@ -31852,12 +31852,7 @@ async function run() {
 }
 exports.run = run;
 async function getPullRequestNumbersFromCommits(fromTag, toTag) {
-    const commitLogs = await (0, run_command_1.runCommand)('git', [
-        'log',
-        `${fromTag}..${toTag}`,
-        '--oneline',
-        '--grep="Merge pull request #"'
-    ]);
+    const commitLogs = await (0, run_command_1.runCommand)(`/bin/bash -c "git --no-pager log ${fromTag}..${toTag} --oneline | grep 'Merge pull request #'"`);
     const regex = /#\d+/g;
     const pullRequestNumbers = commitLogs
         .match(regex)
@@ -31868,7 +31863,7 @@ async function getPullRequestNumbersFromCommits(fromTag, toTag) {
 async function getPullRequestWithNumbers(numbers, token) {
     const octokit = github.getOctokit(token);
     return await Promise.all(numbers.map(async (prNumber) => {
-        core.info(`Getting info on PR #${prNumber}`);
+        core.debug(`Getting info on PR #${prNumber}`);
         const pr = await octokit.rest.pulls.get({
             owner: github.context.repo.owner,
             repo: github.context.repo.repo,
@@ -31906,7 +31901,7 @@ function buildMarkdownChangelog(prsByCategory, fromTag, toTag) {
             return `${pr.title} #${pr.number} (@${pr.user.login})`;
         }));
     });
-    document.link(`https://github.com/teamaltevo/action-changelog-generator/compare/${fromTag}...${toTag}`, 'Open full changelog in GitHub.');
+    document.link(`https://github.com/${github.context.repo.owner}/${github.context.repo.repo}/compare/${fromTag}...${toTag}`, 'Open full changelog in GitHub.');
     return document.toMarkdown();
 }
 
@@ -31927,15 +31922,15 @@ function runCommand(command, args) {
         let errorOutput = '';
         const options = {};
         options.listeners = {
-            stdout: (data) => {
-                output += data.toString();
+            stdline: (data) => {
+                output += data + '\n';
             },
-            stderr: (data) => {
-                errorOutput += data.toString();
+            errline: (data) => {
+                errorOutput += data + '\n';
             }
         };
-        await (0, exec_1.exec)(command, args, options);
-        if (errorOutput) {
+        const code = await (0, exec_1.exec)(command, args, options);
+        if (code !== 0) {
             reject(errorOutput);
         }
         else {
@@ -33862,7 +33857,6 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
  * The entrypoint for the action.
  */
 const main_1 = __nccwpck_require__(399);
-// eslint-disable-next-line @typescript-eslint/no-floating-promises
 (0, main_1.run)();
 
 })();
