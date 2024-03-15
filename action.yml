@@ -7,18 +7,22 @@ branding:
   icon: 'heart'
   color: 'red'
 
-# Define your inputs here.
+
+# Define the inputs for your action
 inputs:
-  milliseconds:
-    description: 'Your input description here'
+  fromTag:
+    description: 'The tag to start from'
     required: true
-    default: '1000'
+  toTag:
+    description: 'The tag to end at'
+    required: true
 
-# Define your outputs here.
+# Define the outputs for your action
 outputs:
-  time:
-    description: 'Your output description here'
+  changelog:
+    description: 'Markdown formatted changelog'
 
+# Define the main entrypoint for your action
 runs:
-  using: node20
-  main: dist/index.js
+  using: 'node20'
+  main: 'dist/index.js'
