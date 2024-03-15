@@ -48,5 +48,8 @@
     "prettier": "^3.2.5",
     "prettier-eslint": "^16.3.0",
     "typescript": "^5.4.2"
+  },
+  "volta": {
+    "node": "20.11.1"
   }
 }
