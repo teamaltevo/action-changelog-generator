@@ -41,6 +41,8 @@ The generated changelog as a Markdown string.
 This output can be used in subsequent steps to save the changelog to a file,
 create a release, or send it to a chat application.
 
+---
+
 ## Example Workflow
 
 ```yml
@@ -54,11 +56,15 @@ on:
 
 jobs:
   tag-release:
+    # This action only works on linux runners
     runs-on: ubuntu-latest
+
     # Check if the PR is merged and if it is a release branch
     if:
       ${{ github.event.pull_request.merged == true &&
       startsWith(github.event.pull_request.head.ref, 'release/')}}
+
+    # Define the permissions for the action
     permissions:
       contents: write
       pull-requests: read
@@ -68,6 +74,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Required to fetch tags and commits
 
       - name: Extract release branch version
         id: new-version
@@ -77,9 +85,7 @@ jobs:
 
       - name: Get previous release Tag
         id: latest-version
-        run: |
-          git fetch --prune --unshallow --tags
-          echo "VERSION=$(git describe --tags --abbrev=0)" >> "$GITHUB_OUTPUT"
+        run: echo "TAG=$(git describe --tags --abbrev=0)" >> "$GITHUB_OUTPUT"
 
       - name: Create new release Tag
         uses: actions/github-script@v7
@@ -88,17 +94,20 @@ jobs:
             github.rest.git.createRef({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                ref: 'refs/tags/v${{ steps.extract-version.outputs.VERSION }}',
+                ref: 'refs/tags/v${{ steps.new-version.outputs.VERSION }}',
                 sha: context.sha
             })
 
+      - name: Create tag locally
+        run: git tag "v${{ steps.new-version.outputs.VERSION }}"
+
       - name: Generate Changelog
         id: changelog
-        uses: teamaltevo/action-changelog-generator@v1.1.0
+        uses: teamaltevo/action-changelog-generator@v1.0.5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          fromTag: ${{ steps.latest-version.outputs.VERSION }}
-          toTag: ${{ steps.new-version.outputs.VERSION }}
+          fromTag: ${{ steps.latest-version.outputs.TAG }}
+          toTag: v${{ steps.new-version.outputs.VERSION }}
 
       - name: Create Release
         uses: actions/github-script@v7
@@ -152,17 +161,10 @@ This project includes a helper script, [`script/release`](./script/release)
 designed to streamline the process of tagging and pushing new releases for
 GitHub Actions.
 
-GitHub Actions allows users to select a specific version of the action to use,
-based on release tags. This script simplifies this process by performing the
-following steps:
-
-1. **Retrieving the latest release tag:** The script starts by fetching the most
-   recent release tag by looking at the local data available in your repository.
-1. **Prompting for a new release tag:** The user is then prompted to enter a new
-   release tag. To assist with this, the script displays the latest release tag
-   and provides a regular expression to validate the format of the new tag.
-1. **Tagging the new release:** Once a valid new tag is entered, the script tags
-   the new release.
-1. **Pushing the new tag to the remote:** Finally, the script pushes the new tag
-   to the remote repository. From here, you will need to create a new release in
-   GitHub and users can easily reference the new tag in their workflows.
+```sh
+npm run bundle
+git add -A
+git commit -m "Release v1.x.x"
+git push
+./script/release
+```

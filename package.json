@@ -1,7 +1,7 @@
 {
   "name": "@teamaltevo/action-changelog-generator",
   "description": "GitHub Actions TypeScript template",
-  "version": "1.1.0",
+  "version": "1.0.5",
   "author": "Altevo",
   "private": true,
   "homepage": "https://github.com/teamaltevo/action-changelog-generator",
